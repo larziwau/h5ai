@@ -105,7 +105,6 @@ class Context {
     }
 
     public function is_hidden($name) {
-        // always hide
         if ($name === '.' || $name === '..') {
             return true;
         }
@@ -192,7 +191,6 @@ class Context {
         $cache = [];
         $folder = Item::get($this, $this->to_path($href), $cache);
 
-        // add content of subfolders
         if ($what >= 3 && $folder !== null) {
             foreach ($folder->get_content($cache) as $item) {
                 $item->get_content($cache);
@@ -200,13 +198,11 @@ class Context {
             $folder = $folder->get_parent($cache);
         }
 
-        // add content of this folder and all parent folders
         while ($what >= 2 && $folder !== null) {
             $folder->get_content($cache);
             $folder = $folder->get_parent($cache);
         }
 
-        // only add the requested folder (less fstat overhead)
         if ($what == 1 && $folder !== null) {
             $folder->get_content($cache);
         }
@@ -266,7 +262,6 @@ class Context {
 
         foreach ($requests as $req) {
             if ($req['type'] === 'blocked') {
-                // FIXME the client is still free to choose what is blocked or not.
                 $hrefs[] = null;
                 $filetypes[] = null;
                 continue;
@@ -276,8 +271,6 @@ class Context {
                 $thumbs[$path] = new Thumb($this, $path, $req['type'], $db);
             }
             else if ($thumbs[$path]->type->name === 'file') {
-                // File has already been mime tested and cannot have a thumbnail
-                // Only applies if we request the same path again in the same request (security measure)
                 $hrefs[] = null;
                 $filetypes[] = 'file';
                 continue;
@@ -288,7 +281,7 @@ class Context {
             if ($thumbs[$path]->type->was_wrong()) {
                 $filetypes[] = $thumbs[$path]->type->name;
             } else {
-                $filetypes[] = null; // No client-side update needed.
+                $filetypes[] = null;
             }
         }
         return [$hrefs, $filetypes];
